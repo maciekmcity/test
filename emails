@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: adap-microservice-emails-pl documentation
+  version: 1.0.0
+servers:
+  - url: http://localhost:9003
+    description: Inferred Url
+tags:
+  - name: emails-controller
+    description: Emails Controller
+paths:
+  /emails:
+    get:
+      tags:
+        - emails-controller
+      summary: getInfo
+      operationId: getInfoUsingGET
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Info'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - emails-controller
+      summary: sendEmail
+      operationId: sendEmailUsingPOST
+      parameters:
+        - name: X-ReplyTo
+          in: header
+          description: X-ReplyTo
+          required: false
+          schema:
+            type: string
+        - name: X-ProcessName
+          in: header
+          description: X-ProcessName
+          required: false
+          schema:
+            type: string
+        - name: X-EphemeralPublicKey
+          in: header
+          description: X-EphemeralPublicKey
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SendEmailResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AttachmentDetails:
+      title: AttachmentDetails
+      required:
+        - name
+        - type
+      type: object
+      properties:
+        barcode:
+          type: string
+        body:
+          type: string
+          format: byte
+        name:
+          type: string
+        type:
+          type: string
+    Attachments:
+      title: Attachments
+      type: object
+      properties:
+        attachmentsNoZip:
+          $ref: '#/components/schemas/AttachmentsData'
+        attachmentsZip:
+          $ref: '#/components/schemas/AttachmentsData'
+        password:
+          $ref: '#/components/schemas/Password'
+    AttachmentsData:
+      title: AttachmentsData
+      type: object
+      properties:
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentDetails'
+        encrypt:
+          type: boolean
+    Error:
+      title: Error
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    Info:
+      title: Info
+      type: object
+      properties:
+        status:
+          type: string
+    Password:
+      title: Password
+      required:
+        - type
+      type: object
+      properties:
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+        processName:
+          type: string
+        smsData:
+          $ref: '#/components/schemas/SmsData'
+        type:
+          type: integer
+          format: int32
+        value:
+          type: string
+    Recipients:
+      title: Recipients
+      type: object
+      properties:
+        addresses:
+          type: array
+          items:
+            type: string
+        bccAddresses:
+          type: array
+          items:
+            type: string
+        ccAddresses:
+          type: array
+          items:
+            type: string
+    SendEmailRequest:
+      title: SendEmailRequest
+      required:
+        - priority
+        - recipients
+        - subject
+      type: object
+      properties:
+        attachmentList:
+          $ref: '#/components/schemas/Attachments'
+        content:
+          type: string
+        contentHtml:
+          type: string
+        priority:
+          type: integer
+          format: int32
+        recipients:
+          $ref: '#/components/schemas/Recipients'
+        senderAddress:
+          type: string
+        senderName:
+          type: string
+        subject:
+          type: string
+    SendEmailResponse:
+      title: SendEmailResponse
+      type: object
+      properties:
+        sendMode:
+          type: string
+          enum:
+            - ASYNC
+            - SYNC
+    SmsData:
+      title: SmsData
+      required:
+        - billing
+        - priorityType
+        - receiver
+      type: object
+      properties:
+        billing:
+          type: string
+        message:
+          type: string
+        notificationType:
+          type: string
+        priorityType:
+          pattern: ^(AUTH|NORMAL|MASS)$
+          type: string
+        processId:
+          type: string
+        receiver:
+          pattern: ^\+\d{2}\d+$
+          type: string
